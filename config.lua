@@ -15,6 +15,12 @@ Config.FineAmount = 750                 -- kazna za isteklu/neregistrovanu regis
 Config.PlateFormat = 'AA000AA'          -- A = slovo, 0 = broj
 Config.PersonalizedPlatePrice = 15000   -- Tebex/premium opcija
 
+Config.NPC = {
+    model = 'a_m_m_business_01',
+    coords = vector4(-347.0, -136.0, 39.0, 70.0), -- x, y, z, heading -- IZMENI PO ZELJI LOKACIJU
+    interactDistance = 2.5
+}
+
 Config.RandomPoliceCheckChance = 8      -- % sansa da policija "primeti" isteklu reg. (po min proveri)
 Config.CheckIntervalMs = 60000          -- interval provere trenutnog vozila
 

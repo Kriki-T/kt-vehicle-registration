@@ -3,7 +3,20 @@ let currentPlate = "";
 let currentModel = "";
 let verifiedCustomPlate = null;
 
-/* ---------- NUI MESSAGE HANDLER ---------- */
+function getResourceName() {
+  return typeof GetParentResourceName === "function"
+    ? GetParentResourceName()
+    : "kt-vehicle-registration";
+}
+
+function post(endpoint, data) {
+  return fetch(`https://${getResourceName()}/${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=UTF-8" },
+    body: JSON.stringify(data || {}),
+  });
+}
+
 window.addEventListener("message", (event) => {
   const msg = event.data;
 
@@ -77,9 +90,12 @@ window.addEventListener("message", (event) => {
     plateDisplay.classList.add("premium");
     app.classList.add("hidden");
   }
+
+  if (msg.action === "forceClose") {
+    app.classList.add("hidden");
+  }
 });
 
-/* ---------- HELPERS ---------- */
 function formatPlate(plate) {
   return plate.replace(/(.{2})(.{3})(.{2})/, "$1 $2 $3");
 }
@@ -116,22 +132,6 @@ function handleAvailabilityResult(result) {
   }
 }
 
-/* ---------- POST HELPER ---------- */
-function post(endpoint, data) {
-  return fetch(`https://${GetParentResourceName()}/${endpoint}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json; charset=UTF-8" },
-    body: JSON.stringify(data || {}),
-  });
-}
-
-function GetParentResourceName() {
-  return window.GetParentResourceName
-    ? window.GetParentResourceName()
-    : "kt-kt-vehicle-registration";
-}
-
-/* ---------- STATIC EVENT LISTENERS ---------- */
 document.getElementById("closeBtn").addEventListener("click", () => {
   post("close");
   app.classList.add("hidden");
@@ -176,7 +176,6 @@ document.getElementById("customPlateInput").addEventListener("input", (e) => {
   document.getElementById("availabilityMsg").innerText = "";
 });
 
-/* ---------- TABS ---------- */
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     document
@@ -191,7 +190,6 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
   });
 });
 
-/* ---------- ESC TO CLOSE ---------- */
 document.addEventListener("keyup", (e) => {
   if (e.key === "Escape") {
     post("close");
