@@ -128,7 +128,7 @@ function post(endpoint, data) {
 function GetParentResourceName() {
   return window.GetParentResourceName
     ? window.GetParentResourceName()
-    : "vehicle-registration";
+    : "kt-kt-vehicle-registration";
 }
 
 /* ---------- STATIC EVENT LISTENERS ---------- */
