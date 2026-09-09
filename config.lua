@@ -18,6 +18,10 @@ Config.PersonalizedPlatePrice = 15000   -- Tebex/premium opcija
 Config.RandomPoliceCheckChance = 8      -- % sansa da policija "primeti" isteklu reg. (po min proveri)
 Config.CheckIntervalMs = 60000          -- interval provere trenutnog vozila
 
+Config.Version = '1.0.0'
+Config.GithubRepo = 'tvoj-github-username/vehicle-registration' -- npr. 'Ivan123/vehicle-registration'
+Config.CheckUpdates = true
+
 Config.Locale = {
     ['title']            = 'Registracija Vozila',
     ['plate']            = 'Tablice',

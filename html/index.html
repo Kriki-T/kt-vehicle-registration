@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="sr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Vehicle Registration</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="header-left">
+            <div class="icon-badge">🚗</div>
+            <div>
+              <h1>Registracija Vozila</h1>
+              <p id="modelText">—</p>
+            </div>
+          </div>
+          <button id="closeBtn" class="close-btn">✕</button>
+        </div>
+
+        <div class="plate-display" id="plateDisplay">AA000AA</div>
+
+        <div class="status-row">
+          <span id="statusBadge" class="badge badge-none"
+            >Nije registrovano</span
+          >
+          <span id="daysLeft" class="days-left"></span>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-box">
+            <span class="label">Cena registracije</span>
+            <span class="value" id="priceRegister">$500</span>
+          </div>
+          <div class="info-box">
+            <span class="label">Cena obnove</span>
+            <span class="value" id="priceRenew">$250</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="registerBtn" class="btn btn-primary">
+            Registruj vozilo
+          </button>
+          <button id="renewBtn" class="btn btn-secondary hidden">
+            Obnovi registraciju
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

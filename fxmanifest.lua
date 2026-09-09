@@ -14,6 +14,7 @@ shared_scripts {
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'bridge/server.lua',
+    'server/version_check.lua',
     'server/main.lua'
 }
 
