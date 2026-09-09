@@ -1,0 +1,26 @@
+Locales = Locales or {}
+
+Locales['en'] = {
+    ['title']                = 'Vehicle Registration',
+    ['plate']                = 'Plates',
+    ['model']                = 'Model',
+    ['status_active']        = 'Active',
+    ['status_expired']       = 'Expired',
+    ['status_none']          = 'Not registered',
+    ['days_left']            = 'Days left',
+    ['register_btn']         = 'Register vehicle',
+    ['renew_btn']            = 'Renew registration',
+    ['not_enough_money']     = 'Not enough money',
+    ['success_register']     = 'Vehicle registered successfully',
+    ['success_renew']        = 'Registration renewed',
+    ['no_vehicle']           = 'You are not in a vehicle',
+    ['fine_message']         = 'You were fined for unregistered vehicle',
+    ['target_open_reg']      = 'Register vehicle',
+    ['target_check_reg']     = 'Check registration',
+    ['already_registered']   = 'Vehicle already registered',
+    ['vehicle_not_found']    = 'Vehicle not found',
+    ['invalid_plate_format'] = 'Invalid plate format',
+    ['plate_taken']          = 'Plate already taken',
+    ['plate_available']      = 'Plate is available',
+    ['personalized_success'] = 'Personalized plate purchased successfully',
+}

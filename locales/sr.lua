@@ -1,0 +1,26 @@
+Locales = Locales or {}
+
+Locales['sr'] = {
+    ['title']                = 'Registracija Vozila',
+    ['plate']                = 'Tablice',
+    ['model']                = 'Model',
+    ['status_active']        = 'Aktivna',
+    ['status_expired']       = 'Istekla',
+    ['status_none']          = 'Nije registrovano',
+    ['days_left']            = 'Preostalo dana',
+    ['register_btn']         = 'Registruj vozilo',
+    ['renew_btn']            = 'Obnovi registraciju',
+    ['not_enough_money']     = 'Nemate dovoljno novca',
+    ['success_register']     = 'Vozilo je uspesno registrovano',
+    ['success_renew']        = 'Registracija je obnovljena',
+    ['no_vehicle']           = 'Niste u vozilu',
+    ['fine_message']         = 'Kaznjeni ste zbog neregistrovanog vozila',
+    ['target_open_reg']      = 'Registracija vozila',
+    ['target_check_reg']     = 'Proveri registraciju',
+    ['already_registered']   = 'Vozilo je vec registrovano',
+    ['vehicle_not_found']    = 'Vozilo nije pronadjeno',
+    ['invalid_plate_format'] = 'Neispravan format tablice',
+    ['plate_taken']          = 'Tablica je vec zauzeta',
+    ['plate_available']      = 'Tablica je dostupna',
+    ['personalized_success'] = 'Personalizovana tablica je uspesno kupljena',
+}

@@ -1,6 +1,6 @@
 local currentVehicle = nil
-local nuiOpen = false
 local npcPed = nil
+local TargetSystem = nil
 
 local function getVehicleData(veh)
     if not veh or veh == 0 or not DoesEntityExist(veh) then
@@ -11,7 +11,7 @@ local function getVehicleData(veh)
     return plate, model
 end
 
-local function openRegistrationUI()
+function OpenRegistrationUI()
     local ped = PlayerPedId()
     if not IsPedInAnyVehicle(ped, false) then
         BridgeC.Notify(Config.Locale['no_vehicle'], 'error')
@@ -31,59 +31,94 @@ RegisterNetEvent('vehreg:client:receiveData', function(data)
     local plate, model = getVehicleData(currentVehicle)
     if not plate then return end
 
-    nuiOpen = true
     SetNuiFocus(true, true)
-    SendNUIMessage({
-        action = 'open',
-        plate = plate,
-        model = model,
-        data = data
-    })
+    SendNUIMessage({ action = 'open', plate = plate, model = model, data = data })
 end)
 
--- ================== SPAWN NPC-a ==================
+-- ================== DETEKCIJA TARGET SISTEMA ==================
 
 CreateThread(function()
+    Wait(1000)
+    if GetResourceState('ox_target') == 'started' then
+        TargetSystem = 'ox'
+    elseif GetResourceState('qb-target') == 'started' then
+        TargetSystem = 'qb'
+    end
+
+    SpawnNPC()
+end)
+
+-- ================== SPAWN NPC + TARGET/BLIP ==================
+
+function SpawnNPC()
     local model = joaat(Config.NPC.model)
     RequestModel(model)
-    while not HasModelLoaded(model) do
-        Wait(10)
-    end
+    while not HasModelLoaded(model) do Wait(10) end
 
     npcPed = CreatePed(4, model, Config.NPC.coords.x, Config.NPC.coords.y, Config.NPC.coords.z - 1.0, Config.NPC.coords.w, false, true)
     SetEntityInvincible(npcPed, true)
     SetBlockingOfNonTemporaryEvents(npcPed, true)
     FreezeEntityPosition(npcPed, true)
     TaskStartScenarioInPlace(npcPed, 'WORLD_HUMAN_CLIPBOARD', 0, true)
-
     SetModelAsNoLongerNeeded(model)
-end)
 
--- ================== INTERAKCIJA SA NPC-em (E taster) ==================
+    if TargetSystem == 'ox' then
+        exports.ox_target:addLocalEntity(npcPed, {
+            {
+                name = 'vehreg_open',
+                icon = 'fa-solid fa-id-card',
+                label = Config.Locale['target_open_reg'],
+                distance = Config.NPC.interactDistance,
+                onSelect = function() OpenRegistrationUI() end
+            }
+        })
+    elseif TargetSystem == 'qb' then
+        exports['qb-target']:AddTargetEntity(npcPed, {
+            options = {
+                {
+                    type = 'client',
+                    event = 'vehreg:client:openViaTarget',
+                    icon = 'fa-solid fa-id-card',
+                    label = Config.Locale['target_open_reg']
+                }
+            },
+            distance = Config.NPC.interactDistance
+        })
+    else
+        -- FALLBACK: nijedan target resurs nije pronadjen, koristi proximity + E
+        CreateThread(function()
+            while true do
+                local sleep = 500
+                local ped = PlayerPedId()
+                local dist = #(GetEntityCoords(ped) - GetEntityCoords(npcPed))
 
-CreateThread(function()
-    while true do
-        Wait(0)
-        local sleep = 500
-        local ped = PlayerPedId()
-        local pedCoords = GetEntityCoords(ped)
-
-        if npcPed and DoesEntityExist(npcPed) then
-            local npcCoords = GetEntityCoords(npcPed)
-            local dist = #(pedCoords - npcCoords)
-
-            if dist < Config.NPC.interactDistance then
-                sleep = 0
-                DrawText3D(npcCoords.x, npcCoords.y, npcCoords.z + 1.0, '[E] Registracija vozila')
-
-                if IsControlJustReleased(0, 38) then -- E taster
-                    openRegistrationUI()
+                if dist < Config.NPC.interactDistance then
+                    sleep = 0
+                    local npcCoords = GetEntityCoords(npcPed)
+                    DrawText3D(npcCoords.x, npcCoords.y, npcCoords.z + 1.0, '[E] ' .. Config.Locale['target_open_reg'])
+                    if IsControlJustReleased(0, Config.FallbackOpenKey) then
+                        OpenRegistrationUI()
+                    end
                 end
+                Wait(sleep)
             end
-        end
-
-        Wait(sleep)
+        end)
     end
+
+    if Config.UseBlip then
+        local blip = AddBlipForCoord(Config.NPC.coords.x, Config.NPC.coords.y, Config.NPC.coords.z)
+        SetBlipSprite(blip, Config.BlipSprite)
+        SetBlipColour(blip, Config.BlipColor)
+        SetBlipScale(blip, Config.BlipScale)
+        SetBlipAsShortRange(blip, true)
+        BeginTextCommandSetBlipName('STRING')
+        AddTextComponentString(Config.BlipLabel)
+        EndTextCommandSetBlipName(blip)
+    end
+end
+
+RegisterNetEvent('vehreg:client:openViaTarget', function()
+    OpenRegistrationUI()
 end)
 
 function DrawText3D(x, y, z, text)
@@ -100,20 +135,10 @@ function DrawText3D(x, y, z, text)
     end
 end
 
--- ================== FAILSAFE KOMANDA (samo za zaglavljeni UI) ==================
-
-RegisterCommand('fixui', function()
-    SetNuiFocus(false, false)
-    SendNUIMessage({ action = 'forceClose' })
-    nuiOpen = false
-    BridgeC.Notify('UI je prinudno zatvoren', 'primary')
-end, false)
-
 -- ================== NUI CALLBACKS ==================
 
 RegisterNUICallback('close', function(_, cb)
     SetNuiFocus(false, false)
-    nuiOpen = false
     cb('ok')
 end)
 
@@ -137,7 +162,7 @@ RegisterNUICallback('buyPersonalized', function(data, cb)
     cb('ok')
 end)
 
--- ================== SERVER -> CLIENT EVENTI ==================
+-- ================== SERVER -> CLIENT ==================
 
 RegisterNetEvent('vehreg:client:setPlate', function(newPlate)
     if DoesEntityExist(currentVehicle) then
@@ -153,21 +178,8 @@ RegisterNetEvent('vehreg:client:personalizedSuccess', function(newPlate)
     SendNUIMessage({ action = 'personalizedSuccess', plate = newPlate })
 end)
 
--- ================== PERIODICNA PROVERA VOZILA (kazne, tiho) ==================
-
-CreateThread(function()
-    while true do
-        Wait(Config.CheckIntervalMs)
-        local ped = PlayerPedId()
-
-        if IsPedInAnyVehicle(ped, false) then
-            local veh = GetVehiclePedIsIn(ped, false)
-            if GetPedInVehicleSeat(veh, -1) == ped and DoesEntityExist(veh) then
-                local plate = getVehicleData(veh)
-                -- tiha provera, ne otvara UI
-            end
-        end
-    end
+RegisterNetEvent('vehreg:client:toast', function(message, type)
+    SendNUIMessage({ action = 'toast', message = message, toastType = type })
 end)
 
 -- ================== CLEANUP ==================

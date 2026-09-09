@@ -3,6 +3,8 @@ let currentPlate = "";
 let currentModel = "";
 let verifiedCustomPlate = null;
 
+/* ================== HELPERI ================== */
+
 function getResourceName() {
   return typeof GetParentResourceName === "function"
     ? GetParentResourceName()
@@ -17,77 +19,44 @@ function post(endpoint, data) {
   });
 }
 
+function formatPlate(plate) {
+  return plate.replace(/(.{2})(.{3})(.{2})/, "$1 $2 $3");
+}
+
+function getDaysLeft(expiresAt) {
+  const expires = new Date(expiresAt);
+  const now = new Date();
+  return Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
+}
+
+function setBadge(el, type, text) {
+  el.className = `badge badge-${type}`;
+  el.innerHTML = `<span class="badge-dot"></span>${text}`;
+}
+
+function showToast(message, type = "success") {
+  const container = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span class="toast-icon">${type === "success" ? "✓" : "✕"}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+/* ================== NUI MESSAGE HANDLER ================== */
+
 window.addEventListener("message", (event) => {
   const msg = event.data;
 
-  if (msg.action === "open") {
-    currentPlate = msg.plate;
-    currentModel = msg.model;
-
-    const plateDisplay = document.getElementById("plateDisplay");
-    plateDisplay.innerText = formatPlate(msg.plate);
-
-    document.getElementById("modelText").innerText = msg.model;
-    document.getElementById("customPlatePreview").innerText = formatPlate(
-      msg.plate,
-    );
-
-    const badge = document.getElementById("statusBadge");
-    const daysLeft = document.getElementById("daysLeft");
-    const registerBtn = document.getElementById("registerBtn");
-    const renewBtn = document.getElementById("renewBtn");
-    const ownerName = document.getElementById("ownerName");
-    const vehicleId = document.getElementById("vehicleId");
-
-    if (msg.data && msg.data.personalized) {
-      plateDisplay.classList.add("premium");
-    } else {
-      plateDisplay.classList.remove("premium");
-    }
-
-    if (!msg.data) {
-      badge.className = "badge badge-none";
-      badge.innerText = "Nije registrovano";
-      daysLeft.innerText = "";
-      registerBtn.classList.remove("hidden");
-      renewBtn.classList.add("hidden");
-      ownerName.innerText = "—";
-      vehicleId.innerText = "—";
-    } else {
-      const expires = new Date(msg.data.expires_at);
-      const now = new Date();
-      const diffDays = Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
-
-      if (diffDays > 0) {
-        badge.className = "badge badge-active";
-        badge.innerText = "Aktivna";
-      } else {
-        badge.className = "badge badge-expired";
-        badge.innerText = "Istekla";
-      }
-      daysLeft.innerText =
-        diffDays > 0 ? `${diffDays} dana preostalo` : "Isteklo";
-      registerBtn.classList.add("hidden");
-      renewBtn.classList.remove("hidden");
-
-      ownerName.innerText = msg.data.owner_identifier
-        ? msg.data.owner_identifier.slice(0, 10) + "..."
-        : "—";
-      vehicleId.innerText = msg.data.id || "—";
-    }
-
-    resetCustomTab();
-    app.classList.remove("hidden");
-  }
-
-  if (msg.action === "plateAvailability") {
-    handleAvailabilityResult(msg.result);
-  }
+  if (msg.action === "open") openOwnerView(msg);
+  if (msg.action === "openLookup") openLookupView(msg);
+  if (msg.action === "plateAvailability") handleAvailabilityResult(msg.result);
+  if (msg.action === "toast") showToast(msg.message, msg.toastType);
 
   if (msg.action === "personalizedSuccess") {
-    const plateDisplay = document.getElementById("plateDisplay");
-    plateDisplay.innerText = formatPlate(msg.plate);
-    plateDisplay.classList.add("premium");
+    const plateText = document.querySelector("#plateDisplay .plate-text");
+    plateText.innerText = formatPlate(msg.plate);
+    document.getElementById("plateDisplay").classList.add("premium");
     app.classList.add("hidden");
   }
 
@@ -96,13 +65,77 @@ window.addEventListener("message", (event) => {
   }
 });
 
-function formatPlate(plate) {
-  return plate.replace(/(.{2})(.{3})(.{2})/, "$1 $2 $3");
+/* ================== OWNER VIEW (registracija/obnova) ================== */
+
+function openOwnerView(msg) {
+  currentPlate = msg.plate;
+  currentModel = msg.model;
+
+  document.getElementById("headerTitle").innerText = "Registracija Vozila";
+  document.getElementById("headerIconText").innerText = "🚗";
+
+  document.getElementById("mainTabs").classList.remove("hidden");
+
+  document.querySelectorAll(".tab-btn").forEach((btn, i) => {
+    btn.classList.toggle("active", i === 0);
+  });
+  document
+    .querySelectorAll(".tab-content")
+    .forEach((c) => c.classList.remove("active"));
+  document.getElementById("tab-main").classList.add("active");
+
+  document.querySelector("#plateDisplay .plate-text").innerText = formatPlate(
+    msg.plate,
+  );
+  document.getElementById("modelText").innerText = msg.model;
+  document.querySelector("#customPlatePreview .plate-text").innerText =
+    formatPlate(msg.plate);
+
+  const plateDisplay = document.getElementById("plateDisplay");
+  const badge = document.getElementById("statusBadge");
+  const daysLeft = document.getElementById("daysLeft");
+  const registerBtn = document.getElementById("registerBtn");
+  const renewBtn = document.getElementById("renewBtn");
+  const ownerName = document.getElementById("ownerName");
+  const vehicleId = document.getElementById("vehicleId");
+
+  plateDisplay.classList.toggle(
+    "premium",
+    !!(msg.data && msg.data.personalized),
+  );
+
+  if (!msg.data) {
+    setBadge(badge, "none", "Nije registrovano");
+    daysLeft.innerText = "";
+    registerBtn.classList.remove("hidden");
+    renewBtn.classList.add("hidden");
+    ownerName.innerText = "—";
+    vehicleId.innerText = "—";
+  } else {
+    const diffDays = getDaysLeft(msg.data.expires_at);
+    setBadge(
+      badge,
+      diffDays > 0 ? "active" : "expired",
+      diffDays > 0 ? "Aktivna" : "Istekla",
+    );
+    daysLeft.innerText =
+      diffDays > 0 ? `${diffDays} dana preostalo` : "Isteklo";
+    registerBtn.classList.add("hidden");
+    renewBtn.classList.remove("hidden");
+    ownerName.innerText = msg.data.owner_identifier
+      ? msg.data.owner_identifier.slice(0, 10) + "..."
+      : "—";
+    vehicleId.innerText = msg.data.id || "—";
+  }
+
+  resetCustomTab();
+  app.classList.remove("hidden");
 }
 
 function resetCustomTab() {
   verifiedCustomPlate = null;
   document.getElementById("customPlateInput").value = "";
+  document.getElementById("inputCounter").innerText = "0/8";
   document.getElementById("availabilityMsg").innerText = "";
   document.getElementById("availabilityMsg").className = "availability-msg";
   document.getElementById("buyCustomBtn").disabled = true;
@@ -113,7 +146,7 @@ function handleAvailabilityResult(result) {
   const buyBtn = document.getElementById("buyCustomBtn");
 
   if (result.reason === "invalid") {
-    msgBox.innerText = "Neispravan format (samo slova/brojevi, 4-8 znakova)";
+    msgBox.innerText = "Neispravan format (4-8 znakova, samo slova/brojevi)";
     msgBox.className = "availability-msg msg-error";
     buyBtn.disabled = true;
     return;
@@ -132,8 +165,74 @@ function handleAvailabilityResult(result) {
   }
 }
 
+/* ================== LOOKUP VIEW (provera - svi) ================== */
+
+function openLookupView(msg) {
+  document.getElementById("headerTitle").innerText = "Provera Registracije";
+  document.getElementById("headerIconText").innerText = "🔍";
+  document.getElementById("modelText").innerText = msg.model;
+
+  document.getElementById("mainTabs").classList.add("hidden");
+  document
+    .querySelectorAll(".tab-content")
+    .forEach((c) => c.classList.remove("active"));
+  document.getElementById("tab-lookup").classList.add("active");
+
+  const plateDisplay = document.getElementById("lookupPlateDisplay");
+  document.querySelector("#lookupPlateDisplay .plate-text").innerText =
+    formatPlate(msg.plate);
+
+  const badge = document.getElementById("lookupStatusBadge");
+  const daysLeft = document.getElementById("lookupDaysLeft");
+  const daysBox = document.getElementById("lookupDaysBox");
+  const personalizedRow = document.getElementById("lookupPersonalizedRow");
+
+  document.getElementById("lookupModel").innerText = msg.model;
+  personalizedRow.innerHTML = "";
+  plateDisplay.classList.toggle(
+    "premium",
+    !!(msg.data && msg.data.personalized),
+  );
+
+  if (!msg.data) {
+    setBadge(badge, "none", "Nije registrovano");
+    daysLeft.innerText = "";
+    daysBox.innerText = "—";
+    document.getElementById("lookupRegisteredDate").innerText = "—";
+  } else {
+    const diffDays = getDaysLeft(msg.data.expires_at);
+    setBadge(
+      badge,
+      diffDays > 0 ? "active" : "expired",
+      diffDays > 0 ? "Aktivna" : "Istekla",
+    );
+    daysLeft.innerText =
+      diffDays > 0 ? `${diffDays} dana preostalo` : "Isteklo";
+    daysBox.innerText = diffDays > 0 ? `${diffDays} dana` : "Isteklo";
+
+    const regDate = new Date(msg.data.registered_at);
+    document.getElementById("lookupRegisteredDate").innerText =
+      regDate.toLocaleDateString("sr-RS");
+
+    if (msg.data.personalized) {
+      personalizedRow.innerHTML =
+        '<span class="badge-gold-tag">★ Personalizovana tablica</span>';
+    }
+  }
+
+  app.classList.remove("hidden");
+}
+
+/* ================== STATIC LISTENERS ================== */
+
 document.getElementById("closeBtn").addEventListener("click", () => {
   post("close");
+  post("closeLookup");
+  app.classList.add("hidden");
+});
+
+document.getElementById("closeLookupBtn").addEventListener("click", () => {
+  post("closeLookup");
   app.classList.add("hidden");
 });
 
@@ -169,9 +268,10 @@ document.getElementById("buyCustomBtn").addEventListener("click", () => {
 
 document.getElementById("customPlateInput").addEventListener("input", (e) => {
   e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-  document.getElementById("customPlatePreview").innerText = formatPlate(
-    e.target.value.padEnd(7, "·"),
-  );
+  document.getElementById("inputCounter").innerText =
+    `${e.target.value.length}/8`;
+  document.querySelector("#customPlatePreview .plate-text").innerText =
+    formatPlate(e.target.value.padEnd(7, "·"));
   document.getElementById("buyCustomBtn").disabled = true;
   document.getElementById("availabilityMsg").innerText = "";
 });
@@ -184,7 +284,6 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
     document
       .querySelectorAll(".tab-content")
       .forEach((c) => c.classList.remove("active"));
-
     btn.classList.add("active");
     document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
   });
@@ -193,6 +292,7 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 document.addEventListener("keyup", (e) => {
   if (e.key === "Escape") {
     post("close");
+    post("closeLookup");
     app.classList.add("hidden");
   }
 });
