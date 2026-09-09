@@ -24,9 +24,6 @@ body {
   background: transparent;
   overflow: hidden;
 }
-.hidden {
-  display: none !important;
-}
 
 #app {
   width: 100vw;
@@ -391,4 +388,104 @@ body {
 }
 .owner-info span b {
   color: var(--text);
+}
+
+/* ---------- TABS ---------- */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  padding: 5px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+  box-shadow: 0 0 15px rgba(91, 141, 255, 0.4);
+}
+
+.tab-btn.gold-tab.active {
+  background: linear-gradient(135deg, var(--gold), #f59e0b);
+  color: #1a1a1a;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.tab-content.active {
+  display: block;
+}
+
+/* ---------- CUSTOM PLATE INPUT ---------- */
+.input-group {
+  margin-bottom: 18px;
+}
+
+.input-label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+#customPlateInput {
+  width: 100%;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid var(--border-glass);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 18px;
+  letter-spacing: 4px;
+  text-align: center;
+  font-weight: 700;
+  outline: none;
+  transition: 0.25s;
+}
+
+#customPlateInput:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.35);
+}
+
+.availability-msg {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  min-height: 16px;
+}
+
+.msg-success {
+  color: var(--success);
+}
+.msg-error {
+  color: var(--danger);
+}
+
+/* ---------- DISABLED BUTTON STATE ---------- */
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }

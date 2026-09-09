@@ -8,6 +8,7 @@
   <body>
     <div id="app" class="hidden">
       <div class="card">
+        <!-- HEADER -->
         <div class="card-header">
           <div class="header-left">
             <div class="icon-badge">🚗</div>
@@ -19,33 +20,88 @@
           <button id="closeBtn" class="close-btn">✕</button>
         </div>
 
-        <div class="plate-display" id="plateDisplay">AA000AA</div>
-
-        <div class="status-row">
-          <span id="statusBadge" class="badge badge-none"
-            >Nije registrovano</span
-          >
-          <span id="daysLeft" class="days-left"></span>
+        <!-- TAB SWITCHER -->
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="main">Registracija</button>
+          <button class="tab-btn gold-tab" data-tab="custom">
+            ★ Personalizacija
+          </button>
         </div>
 
-        <div class="info-grid">
-          <div class="info-box">
-            <span class="label">Cena registracije</span>
-            <span class="value" id="priceRegister">$500</span>
+        <!-- MAIN TAB -->
+        <div class="tab-content active" id="tab-main">
+          <div class="plate-display" id="plateDisplay">AA000AA</div>
+
+          <div class="status-row">
+            <span id="statusBadge" class="badge badge-none"
+              >Nije registrovano</span
+            >
+            <span id="daysLeft" class="days-left"></span>
           </div>
-          <div class="info-box">
-            <span class="label">Cena obnove</span>
-            <span class="value" id="priceRenew">$250</span>
+
+          <div class="info-grid">
+            <div class="info-box blue">
+              <span class="label">Cena registracije</span>
+              <span class="value" id="priceRegister">$500</span>
+            </div>
+            <div class="info-box purple">
+              <span class="label">Cena obnove</span>
+              <span class="value" id="priceRenew">$250</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="registerBtn" class="btn btn-primary">
+              Registruj vozilo
+            </button>
+            <button id="renewBtn" class="btn btn-secondary hidden">
+              Obnovi registraciju
+            </button>
+          </div>
+
+          <div class="owner-info" id="ownerInfo">
+            <span>Vlasnik: <b id="ownerName">—</b></span>
+            <span>ID vozila: <b id="vehicleId">—</b></span>
           </div>
         </div>
 
-        <div class="actions">
-          <button id="registerBtn" class="btn btn-primary">
-            Registruj vozilo
-          </button>
-          <button id="renewBtn" class="btn btn-secondary hidden">
-            Obnovi registraciju
-          </button>
+        <!-- CUSTOM PLATE TAB (GOLD) -->
+        <div class="tab-content" id="tab-custom">
+          <div class="plate-display premium" id="customPlatePreview">
+            AA000AA
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Unesi zeljenu tablicu</label>
+            <input
+              type="text"
+              id="customPlateInput"
+              maxlength="8"
+              placeholder="npr. VIP001"
+              autocomplete="off"
+            />
+            <div class="availability-msg" id="availabilityMsg"></div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box gold">
+              <span class="label">Cena personalizacije</span>
+              <span class="value" id="priceCustom">$15,000</span>
+            </div>
+            <div class="info-box cyan">
+              <span class="label">Dozvoljeno znakova</span>
+              <span class="value">4 - 8</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="checkAvailabilityBtn" class="btn btn-secondary">
+              Proveri dostupnost
+            </button>
+            <button id="buyCustomBtn" class="btn btn-gold" disabled>
+              Kupi tablicu
+            </button>
+          </div>
         </div>
       </div>
     </div>

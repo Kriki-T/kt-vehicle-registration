@@ -22,6 +22,10 @@ Config.Version = '1.0.0'
 Config.GithubRepo = 'tvoj-github-username/vehicle-registration' -- npr. 'Ivan123/vehicle-registration'
 Config.CheckUpdates = true
 
+Config.PersonalizedPlatePrice = 15000
+Config.PersonalizedPlateMinLength = 4
+Config.PersonalizedPlateMaxLength = 8
+
 Config.Locale = {
     ['title']            = 'Registracija Vozila',
     ['plate']            = 'Tablice',
