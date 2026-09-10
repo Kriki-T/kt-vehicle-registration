@@ -7,7 +7,7 @@ Config.Locale = Locales[Config.Language]
 -- ================== NPC / TARGET ==================
 Config.NPC = {
     model = 'a_m_m_business_01',
-    coords = vector4(-347.0, -136.0, 39.0, 70.0),
+    coords = vector4(733.4284, -1089.0437, 22.1690, 85.2881),
     interactDistance = 2.5
 }
 

@@ -28,6 +28,7 @@ body {
   background: transparent;
   overflow: hidden;
 }
+
 .hidden {
   display: none !important;
 }

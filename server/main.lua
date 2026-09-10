@@ -36,8 +36,28 @@ end
 
 local function isExpired(expiresAt)
     if not expiresAt then return true end
-    local y,m,d,h,mi,s = expiresAt:match('(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)')
-    local ts = os.time({year=tonumber(y),month=tonumber(m),day=tonumber(d),hour=tonumber(h),min=tonumber(mi),sec=tonumber(s)})
+
+    -- Ako je vec broj (unix timestamp), koristi direktno
+    if type(expiresAt) == 'number' then
+        return os.time() > expiresAt
+    end
+
+    -- Ako nije string ni broj, pretvori u string
+    if type(expiresAt) ~= 'string' then
+        expiresAt = tostring(expiresAt)
+    end
+
+    local y, m, d, h, mi, s = expiresAt:match('(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)')
+
+    -- Ako parsiranje ne uspe (npr. neocekivan format), tretiraj kao isteklo (sigurnija opcija)
+    if not y then
+        return true
+    end
+
+    local ts = os.time({
+        year = tonumber(y), month = tonumber(m), day = tonumber(d),
+        hour = tonumber(h), min = tonumber(mi), sec = tonumber(s)
+    })
     return os.time() > ts
 end
 
@@ -109,8 +129,18 @@ RegisterNetEvent('vehreg:server:renew', function(plate)
     local base = os.time()
     local expiresTs = 0
     if existing.expires_at then
-        local y,m,d = existing.expires_at:match('(%d+)-(%d+)-(%d+)')
-        expiresTs = os.time({year=tonumber(y),month=tonumber(m),day=tonumber(d),hour=0,min=0,sec=0})
+        local expiresStr = existing.expires_at
+        if type(expiresStr) == 'number' then
+            expiresTs = expiresStr
+        else
+            if type(expiresStr) ~= 'string' then
+                expiresStr = tostring(expiresStr)
+            end
+            local y, m, d = expiresStr:match('(%d+)-(%d+)-(%d+)')
+            if y then
+                expiresTs = os.time({year=tonumber(y),month=tonumber(m),day=tonumber(d),hour=0,min=0,sec=0})
+            end
+        end
     end
     local startFrom = math.max(base, expiresTs)
     local newExpires = os.date('%Y-%m-%d %H:%M:%S', startFrom + (Config.RegistrationDays * 86400))
